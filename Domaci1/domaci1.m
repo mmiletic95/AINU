@@ -1,48 +1,101 @@
-F=0.01;
+% FIND THE TRANFER FUNCTION STRUCTURE
+
+%% load system into simulink S-Function
+load_system('model');
+set_param('model/S-Function','FunctionName','model1');
+save_system('model');
+ 
+%% check is system dynamic or static
+
+%simulate system with step
 Fs=100;
-numOfHar=100;
+duration=100;
+t=0:1/Fs:100;
+u.time=t';
+u.signals.values=ones(1,length(t))';
+sim('model',[0 duration],simset('solver','ode5','FixedStep',1/Fs));
+
+%plot the output dependent on the input
+plot(u.signals.values,y.signals.values);
+xlabel('u');
+ylabel('y');
+title('Output dependent on the input');
+% we have a lot of different output values for the same input ->
+% -> dynamic system
+
+%% check is system linear and time invariant
+
+% create signal with a lot of periodic components whitch has different freq
+
+F=0.01;
+Fs=1000;
+numOfHar=1000;
 duration=100;
 t=0:1/Fs:duration;
+
 x=createSignal(F,numOfHar,duration,Fs);
-x1=cos(2*pi*t*0.1);
-x1=x1+cos(2*pi*t*0.3);
-x1=x1+cos(2*pi*t*0.5);
-x1=x1+cos(2*pi*t*0.7);
-%x=x+0.1;
-%x=x+createSignal(0.1,9,duration,Fs);
-%x=x+createSignal(1,49,duration,Fs);
-%x=x+createSignal(10,4,duration,Fs);
-N=20000;
-Y=fft(x);
+u.time=t';
+u.signals.values=x';
+
+% calculate FT of signal
+U=fft(u.signals.values);
+
+% plot amplitude spectrum of signal
+fo=0:Fs/length(U):Fs/2;
+
+p2=abs(U/length(U));
+p1=p2(1:length(U)/2+1);
+p1(2:end)=2*p1(2:end);
+
+figure;
+subplot(2,1,1);
+stem(fo,p1);
+set(gca,'Xscale','log');
+xlabel('f [Hz]');
+ylabel('|U|');
+title('Spectrum of input signal');
+
+%simulate system 
+sim('model',[0 duration],simset('solver','ode5','FixedStep',1/Fs));
+%[y1,t1]=lsim(sys,x,t);
+% calculate FT of output signal
+Y=fft(y.signals.values);
+
+%plot spectrum of output signal
+p22=abs(Y/length(Y));
+p12=p22(1:length(Y)/2+1);
+p12(2:end)=2*p12(2:end);
 
 fo=0:Fs/length(Y):Fs/2;
 
-p2=abs(Y/length(Y));
-p1=p2(1:length(Y)/2+1);
-p1(2:end)=2*p1(2:end);
-subplot(3,1,1);
-stem(fo,p1);
+subplot(2,1,2);
+stem(fo,p12);
 set(gca,'Xscale','log');
-s=tf('s');
-sys1=(s+3)/(s^2+s+1);
-%xlim([0.01 20])
-[y1,t1]=lsim(sys1,x,t);
+xlabel('f [Hz]');
+ylabel('|Y|');
+title('Spectrum of output signal');
 
-Y1=fft(y1);
-fo=0:Fs/length(Y1):Fs/2;
+%% calculate transfer function
+G=Y./U;
 
-p22=abs(Y1/length(Y1));
-p12=p22(1:length(Y1)/2+1);
-p12(2:end)=2*p12(2:end);
-subplot(3,1,2);
-stem(fo,p1);
+p23=abs(G);
+p13=p23(1:length(G)/2+1);
+p13(2:end)=2*p13(2:end);
 
-G=Y1'./Y;
-
-%p2=abs(G/length(G));
-%p1=p2(1:length(G)/2+1);
-%p1(2:end)=2*p1(2:end);
-subplot(3,1,3);
-plot(fo,p12'./p1);
+% plot bode diagram
+figure;
+subplot(2,1,1);
+plot(fo,p13);
 set(gca,'Xscale','log');
+xlabel('f [Hz]');
+ylabel('|G|');
+title('Bode diagram of system');
+xlim([0.01 10]);
+
+subplot(2,1,2);
+plot(fo,20*log10(p13));
+set(gca,'Xscale','log');
+xlabel('f [Hz]');
+ylabel('|G| [dB]');
+title('Bode diagram of system (dB)');
 xlim([0.01 10])
