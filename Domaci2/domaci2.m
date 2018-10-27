@@ -2,10 +2,10 @@
 clear;
 % sys= (b1*s + b0 )/ (s^2 + a1*s +a0)
 %% create input signal and simulate model
-SW=1;
+SW=2;
 F=0.01;
 Fs=1000;
-Tf=100;
+Tf=10;
 numOfHar=1000;
 duration=100;
 t=0:1/Fs:duration;

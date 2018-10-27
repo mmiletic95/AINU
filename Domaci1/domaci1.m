@@ -10,7 +10,7 @@ save_system('model');
 %simulate system with step
 Fs=100;
 duration=100;
-t=0:1/Fs:100;
+t=0:1/Fs:duration;
 u.time=t';
 u.signals.values=ones(1,length(t))';
 sim('model',[0 duration],simset('solver','ode5','FixedStep',1/Fs));
@@ -30,10 +30,10 @@ title('Output dependent on the input');
 F=0.01;
 Fs=1000;
 numOfHar=1000;
-duration=100;
+duration=2000;
 t=0:1/Fs:duration;
 
-x=createSignal(F,numOfHar,duration,Fs);
+x=createSignal(F,numOfHar,duration,Fs,2);
 u.time=t';
 u.signals.values=x';
 
@@ -57,6 +57,8 @@ title('Spectrum of input signal');
 
 %simulate system 
 sim('model',[0 duration],simset('solver','ode5','FixedStep',1/Fs));
+%s=tf('s');
+%sys=(s+3)/(s^2+s+1);
 %[y1,t1]=lsim(sys,x,t);
 % calculate FT of output signal
 Y=fft(y.signals.values);
@@ -68,6 +70,7 @@ p12(2:end)=2*p12(2:end);
 
 fo=0:Fs/length(Y):Fs/2;
 
+
 subplot(2,1,2);
 stem(fo,p12);
 set(gca,'Xscale','log');
@@ -76,6 +79,22 @@ ylabel('|Y|');
 title('Spectrum of output signal');
 
 %% calculate transfer function
+F=0.01;
+Fs=1000;
+numOfHar=1000;
+duration=100;
+t=0:1/Fs:duration;
+
+x=createSignal(F,numOfHar,duration,Fs,1);
+u.time=t';
+u.signals.values=x';
+
+U=fft(u.signals.values);
+
+sim('model',[0 duration],simset('solver','ode5','FixedStep',1/Fs));
+
+Y=fft(y.signals.values);
+
 G=Y./U;
 
 p23=abs(G);
@@ -84,6 +103,8 @@ p13(2:end)=2*p13(2:end);
 
 % plot bode diagram
 figure;
+fo=0:Fs/length(G):Fs/2;
+
 subplot(2,1,1);
 plot(fo,p13);
 set(gca,'Xscale','log');
@@ -93,6 +114,7 @@ title('Bode diagram of system');
 xlim([0.01 10]);
 
 subplot(2,1,2);
+
 plot(fo,20*log10(p13));
 set(gca,'Xscale','log');
 xlabel('f [Hz]');

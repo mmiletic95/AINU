@@ -7,7 +7,7 @@ switch flag
         ts=[0 0];
     case 1
         sys(1)=x(2);
-        sys(2)=-x(1)^2-x(1)*x(2)+u;
+        sys(2)=x(1)^2-x(1)*x(2)+u;
     case 3
         sys=x(1);
     otherwise 
