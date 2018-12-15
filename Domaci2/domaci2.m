@@ -38,19 +38,28 @@ system= (b1*s+b0)/(s^2+a1*s+a0);
 %% 2.1 ABSOLUTE VALUE
 
 % J= SUM{ Cip + Cim}
-
+% add fi at the end 
 j=ones(1,2*length(eta(1:end/100)));
 j1=zeros(1,size(fi,2));
 j=[j,j1];
+
+% constraints eta_j (i_th_sample)=sum (fi_j (i_th_sample) * theta_j...
+% (i_th_sample) ) + Cip-Cim
+% 2*n constraints
 x=zeros(length(eta(1:end/100)),2*length(eta(1:end/100)));
-for i = 1: length(eta(1:end/100));
+for i = 1: length(eta(1:end/100))
     x(i,2*i-1)=1;
     x(i,2*i)=-1;
 end
-
 Aeq=[x,fi(1:end/100,:)];
 Beq=eta(1:end/100);
+
+
 Alb=[zeros(size(x)),-Inf*ones(size(fi(1:end/100,:)))];
 
 xR=linprog(j,[],[],Aeq,Beq,Alb,[]);
-
+theta1=xR(end-3:end);
+a1_1=theta1(1);
+a0_1=theta1(2);
+b1_1=theta1(3);
+b0_1=theta1(4);

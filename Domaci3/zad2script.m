@@ -8,7 +8,7 @@ m=1;
 %real sistem
 A=[0 1;0 -b/m];
 B=[0;1/m];
-C=[1 0; 0 1];
+C=[1 0];
 D=[0;0];
 
 
@@ -18,16 +18,13 @@ a=1/T;
 % calculate gains of regulator
 k=acker(A,B,[-a -a]);
 
-% measure only position
-C2=[1,0];
-
 % calculate observer gains
 
-L=acker(A',C2',[-3 -3])';
+L=acker(A',C',[-4 -4])';
 
-%A1=A-L*C2;
-%B1=[B L];
-%C1=[1 0; 0 1];
+Ao=A-L*C;
+Bo=[B L];
+Co=[1 0; 0 1];
 
 swN=0; % 1-noise
 swD=0; % 1-disturbance
